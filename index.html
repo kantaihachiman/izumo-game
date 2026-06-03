@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>艦隊八幡社 はちまん売店</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  :root {
+    --ink: #4a2c1a;
+    --brown: #7b3f20;
+    --red: #bd3a2b;
+    --cream: #fff7df;
+    --gold: #e9bd57;
+    --sea: #447f9d;
+    --navy: #263b53;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    color: var(--ink);
+    background:
+      linear-gradient(rgba(255, 247, 219, 0.82), rgba(255, 239, 199, 0.88)),
+      repeating-linear-gradient(0deg, #f3dba6 0 18px, #eccb86 18px 21px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+  }
+
+  button {
+    font-family: inherit;
+  }
+
+  .game {
+    width: min(940px, 100%);
+    background: var(--cream);
+    border: 4px solid var(--brown);
+    box-shadow: 0 10px 0 #b66b35, 0 18px 28px rgba(72, 35, 14, 0.25);
+  }
+
+  header {
+    padding: 12px 16px 14px;
+    text-align: center;
+    background: var(--red);
+    color: #fff8df;
+    border-bottom: 4px solid var(--brown);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(24px, 4.5vw, 42px);
+    letter-spacing: 0.08em;
+    text-shadow: 2px 2px 0 #71281d;
+  }
+
+  .sub {
+    margin-top: 4px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .status {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background: #f0d58b;
+    border-bottom: 3px solid var(--brown);
+  }
+
+  .status-card {
+    min-width: 0;
+    padding: 8px 6px;
+    text-align: center;
+    background: #fff9e8;
+    border: 2px solid #8e552d;
+    font-weight: 800;
+  }
+
+  .label {
+    display: block;
+    font-size: 12px;
+    color: #765035;
+  }
+
+  .value {
+    display: block;
+    margin-top: 2px;
+    font-size: clamp(18px, 3.5vw, 26px);
+  }
+
+  .stage {
+    position: relative;
+    height: 385px;
+    overflow: hidden;
+    background: linear-gradient(#91c7d7 0 38%, #f7e4b1 38% 100%);
+    border-bottom: 4px solid var(--brown);
+  }
+
+  .sun {
+    position: absolute;
+    right: 70px;
+    top: 32px;
+    width: 72px;
+    height: 72px;
+    background: #f8d36b;
+    border: 4px solid #9e4a25;
+    border-radius: 50%;
+  }
+
+  .cloud {
+    position: absolute;
+    left: 42px;
+    top: 44px;
+    width: 96px;
+    height: 32px;
+    background: #fff7e2;
+    border: 3px solid #8d5a33;
+    border-radius: 999px;
+  }
+
+  .cloud::before,
+  .cloud::after {
+    content: "";
+    position: absolute;
+    background: #fff7e2;
+    border: 3px solid #8d5a33;
+    border-radius: 50%;
+  }
+
+  .cloud::before {
+    left: 18px;
+    top: -22px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .cloud::after {
+    right: 14px;
+    top: -16px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .sea {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 142px;
+    height: 58px;
+    background:
+      repeating-linear-gradient(135deg, #447f9d 0 16px, #6ea8bd 16px 32px);
+    border-top: 3px solid #31576b;
+    border-bottom: 3px solid #31576b;
+    animation: wave 1.4s linear infinite;
+  }
+
+  @keyframes wave {
+    from { background-position: 0 0; }
+    to { background-position: 32px 0; }
+  }
+
+  .ship {
+    position: absolute;
+    left: 55px;
+    top: 111px;
+    width: 135px;
+    height: 42px;
+    background: #596878;
+    border: 3px solid #2d3640;
+    clip-path: polygon(0 30%, 90% 30%, 100% 55%, 82% 100%, 12% 100%);
+  }
+
+  .ship::before {
+    content: "";
+    position: absolute;
+    left: 44px;
+    top: -26px;
+    width: 34px;
+    height: 30px;
+    background: #738291;
+    border: 3px solid #2d3640;
+  }
+
+  .torii {
+    position: absolute;
+    left: 50%;
+    top: 68px;
+    transform: translateX(-50%);
+    width: 250px;
+    height: 190px;
+  }
+
+  .torii .top {
+    position: absolute;
+    left: 10px;
+    top: 0;
+    width: 230px;
+    height: 26px;
+    background: #c53725;
+    border: 4px solid #762719;
+  }
+
+  .torii .top2 {
+    position: absolute;
+    left: 35px;
+    top: 34px;
+    width: 180px;
+    height: 22px;
+    background: #d44a2c;
+    border: 4px solid #762719;
+  }
+
+  .torii .post {
+    position: absolute;
+    top: 50px;
+    width: 28px;
+    height: 138px;
+    background: #c53725;
+    border: 4px solid #762719;
+  }
+
+  .torii .left { left: 54px; }
+  .torii .right { right: 54px; }
+
+  .shrine {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: 360px;
+    height: 160px;
+    background: #8f4a2b;
+    border: 4px solid #5e2b18;
+  }
+
+  .roof {
+    position: absolute;
+    left: -34px;
+    top: -54px;
+    width: 428px;
+    height: 70px;
+    background: var(--navy);
+    border: 4px solid #142031;
+    clip-path: polygon(0 100%, 12% 35%, 50% 0, 88% 35%, 100% 100%);
+  }
+
+  .sign {
+    position: absolute;
+    left: 50%;
+    top: 20px;
+    transform: translateX(-50%);
+    width: 184px;
+    padding: 7px 10px;
+    text-align: center;
+    background: #fff1c4;
+    border: 3px solid #5e2b18;
+    font-weight: 900;
+  }
+
+  .stall {
+    position: absolute;
+    left: 35px;
+    bottom: 0;
+    width: 292px;
+    height: 80px;
+    background: #f3c15f;
+    border-top: 4px solid #5e2b18;
+  }
+
+  .goods {
+    position: absolute;
+    left: 40px;
+    bottom: 40px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .good {
+    width: 48px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: #fff8df;
+    border: 3px solid #6e3d24;
+    border-radius: 6px;
+    font-weight: 900;
+  }
+
+  .hachiman {
+    position: absolute;
+    left: 38%;
+    bottom: 28px;
+    width: 92px;
+    height: 122px;
+    transform: translateX(-50%);
+    animation: idle 1.1s ease-in-out infinite alternate;
+  }
+
+  @keyframes idle {
+    from { transform: translateX(-50%) translateY(0); }
+    to { transform: translateX(-50%) translateY(-4px); }
+  }
+
+  .head {
+    position: absolute;
+    left: 19px;
+    top: 0;
+    width: 54px;
+    height: 54px;
+    background: #ffd8b4;
+    border: 3px solid #5b3525;
+    border-radius: 50%;
+  }
+
+  .head::before,
+  .head::after {
+    content: "";
+    position: absolute;
+    top: 25px;
+    width: 7px;
+    height: 7px;
+    background: #4a2c1a;
+    border-radius: 50%;
+  }
+
+  .head::before { left: 13px; }
+  .head::after { right: 13px; }
+
+  .smile {
+    position: absolute;
+    left: 21px;
+    top: 35px;
+    width: 12px;
+    height: 6px;
+    border-bottom: 3px solid #4a2c1a;
+    border-radius: 0 0 20px 20px;
+  }
+
+  .hat {
+    position: absolute;
+    left: 16px;
+    top: -10px;
+    width: 60px;
+    height: 22px;
+    background: #263b53;
+    border: 3px solid #142031;
+    border-radius: 18px 18px 4px 4px;
+  }
+
+  .body {
+    position: absolute;
+    left: 16px;
+    top: 50px;
+    width: 60px;
+    height: 66px;
+    background: #fff8ec;
+    border: 3px solid #5b3525;
+    border-radius: 12px 12px 8px 8px;
+  }
+
+  .sash {
+    position: absolute;
+    left: 21px;
+    top: 58px;
+    width: 52px;
+    height: 14px;
+    background: #bd3a2b;
+    transform: rotate(-20deg);
+    border: 2px solid #7a261b;
+  }
+
+  .name-tag {
+    position: absolute;
+    left: 12px;
+    top: 86px;
+    width: 68px;
+    padding: 2px 0;
+    text-align: center;
+    background: #fff1c4;
+    border: 2px solid #6e3d24;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .visitor {
+    position: absolute;
+    right: 92px;
+    bottom: 42px;
+    width: 126px;
+    height: 132px;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+
+  .visitor.enter {
+    animation: walkIn 0.35s ease-out;
+  }
+
+  @keyframes walkIn {
+    from { transform: translateX(80px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .visitor-face {
+    position: absolute;
+    left: 32px;
+    top: 0;
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    background: #ffe0c2;
+    border: 3px solid #5b3525;
+    border-radius: 50%;
+    font-size: 29px;
+  }
+
+  .visitor-body {
+    position: absolute;
+    left: 24px;
+    top: 58px;
+    width: 78px;
+    height: 68px;
+    background: #4b8f76;
+    border: 3px solid #31594b;
+    border-radius: 16px 16px 8px 8px;
+  }
+
+  .bubble {
+    position: absolute;
+    right: 126px;
+    bottom: 160px;
+    width: min(300px, 48vw);
+    min-height: 84px;
+    padding: 12px 14px;
+    background: #fff9e8;
+    border: 3px solid #6e3d24;
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 rgba(74, 44, 26, 0.18);
+    font-weight: 900;
+    line-height: 1.45;
+  }
+
+  .bubble::after {
+    content: "";
+    position: absolute;
+    right: -16px;
+    bottom: 18px;
+    width: 26px;
+    height: 26px;
+    background: #fff9e8;
+    border-right: 3px solid #6e3d24;
+    border-bottom: 3px solid #6e3d24;
+    transform: rotate(-45deg);
+  }
+
+  .patience {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 8px;
+    height: 8px;
+    background: #e6c88a;
+    border: 2px solid #6e3d24;
+  }
+
+  .patience span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: #4b8f76;
+    transition: width 0.08s linear;
+  }
+
+  .message {
+    position: absolute;
+    left: 50%;
+    top: 80px;
+    transform: translateX(-50%);
+    min-width: 220px;
+    padding: 8px 14px;
+    text-align: center;
+    color: #fff8df;
+    background: #4b8f76;
+    border: 3px solid #31594b;
+    font-weight: 900;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .message.show {
+    animation: pop 0.7s ease;
+  }
+
+  @keyframes pop {
+    0% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+    18% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 12px;
+    background: #fff0c9;
+  }
+
+  .item-button {
+    min-height: 72px;
+    border: 3px solid #6e3d24;
+    background: #fff9e8;
+    color: var(--ink);
+    cursor: pointer;
+    font-weight: 900;
+    box-shadow: 0 5px 0 #c98943;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease;
+  }
+
+  .item-button:hover:not(:disabled) {
+    background: #fff3cf;
+  }
+
+  .item-button:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #c98943;
+  }
+
+  .item-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .item-name {
+    display: block;
+    font-size: clamp(18px, 3.5vw, 25px);
+  }
+
+  .item-price {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+    color: #765035;
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(255, 247, 223, 0.9);
+  }
+
+  .panel {
+    width: min(460px, 100%);
+    padding: 20px;
+    text-align: center;
+    background: #fff9e8;
+    border: 4px solid #6e3d24;
+    box-shadow: 7px 7px 0 rgba(74, 44, 26, 0.18);
+  }
+
+  .panel h2 {
+    margin: 0 0 8px;
+    font-size: clamp(24px, 5vw, 36px);
+  }
+
+  .panel p {
+    margin: 8px 0 14px;
+    font-weight: 700;
+    line-height: 1.55;
+  }
+
+  .start-button {
+    min-width: 190px;
+    padding: 12px 18px;
+    border: 3px solid #6e3d24;
+    background: var(--red);
+    color: #fff8df;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 900;
+    box-shadow: 0 5px 0 #7a261b;
+  }
+
+  .start-button:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #7a261b;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  @media (max-width: 680px) {
+    body {
+      padding: 8px;
+    }
+
+    .status {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stage {
+      height: 430px;
+    }
+
+    .shrine {
+      width: 300px;
+    }
+
+    .roof {
+      width: 360px;
+      left: -30px;
+    }
+
+    .hachiman {
+      left: 32%;
+      bottom: 35px;
+    }
+
+    .visitor {
+      right: 18px;
+      bottom: 44px;
+    }
+
+    .bubble {
+      left: 14px;
+      right: 14px;
+      bottom: 196px;
+      width: auto;
+    }
+
+    .bubble::after {
+      right: 72px;
+    }
+
+    .controls {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="game">
+    <header>
+      <h1>艦隊八幡社 はちまん売店</h1>
+      <div class="sub">30秒で、参拝のお客さんにぴったりの商品を売ろう</div>
+    </header>
+
+    <section class="status" aria-label="ゲーム状況">
+      <div class="status-card"><span class="label">のこり</span><span class="value" id="time">30.0秒</span></div>
+      <div class="status-card"><span class="label">売上</span><span class="value" id="sales">0文</span></div>
+      <div class="status-card"><span class="label">販売数</span><span class="value" id="served">0人</span></div>
+      <div class="status-card"><span class="label">れんぞく</span><span class="value" id="combo">0</span></div>
+    </section>
+
+    <main class="stage" aria-label="艦隊八幡社の売店">
+      <div class="sun"></div>
+      <div class="cloud"></div>
+      <div class="sea"></div>
+      <div class="ship"></div>
+      <div class="torii">
+        <div class="top"></div>
+        <div class="top2"></div>
+        <div class="post left"></div>
+        <div class="post right"></div>
+      </div>
+      <div class="shrine">
+        <div class="roof"></div>
+        <div class="sign">艦隊八幡社</div>
+        <div class="stall"></div>
+        <div class="goods" aria-hidden="true">
+          <div class="good">守</div>
+          <div class="good">缶</div>
+          <div class="good">湯</div>
+        </div>
+      </div>
+      <div class="hachiman" aria-label="主人公 はちまん">
+        <div class="hat"></div>
+        <div class="head"><div class="smile"></div></div>
+        <div class="body"></div>
+        <div class="sash"></div>
+        <div class="name-tag">はちまん</div>
+      </div>
+      <div class="bubble" id="bubble">開店準備中です</div>
+      <div class="visitor" id="visitor" aria-label="お客さん">
+        <div class="visitor-face" id="visitorFace">水</div>
+        <div class="visitor-body" id="visitorBody"></div>
+      </div>
+      <div class="message" id="message">ありがとうございました！</div>
+
+      <div class="overlay" id="startOverlay">
+        <div class="panel">
+          <h2>はちまん、開店！</h2>
+          <p>お客さんの注文を読んで、下の3つから商品を選びます。30秒で売上スコアを伸ばしましょう。</p>
+          <button class="start-button" id="startButton">開店する</button>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="endOverlay">
+        <div class="panel">
+          <h2>閉店です</h2>
+          <p id="resultText">今日の売上は 0文 でした。</p>
+          <button class="start-button" id="restartButton">もう一度</button>
+        </div>
+      </div>
+    </main>
+
+    <section class="controls" aria-label="商品を選ぶ">
+      <button class="item-button" data-item="omamori" disabled>
+        <span class="item-name">おまもり</span>
+        <span class="item-price">500文</span>
+      </button>
+      <button class="item-button" data-item="badge" disabled>
+        <span class="item-name">缶バッジ</span>
+        <span class="item-price">300文</span>
+      </button>
+      <button class="item-button" data-item="towel" disabled>
+        <span class="item-name">タオル</span>
+        <span class="item-price">700文</span>
+      </button>
+    </section>
+  </div>
+
+<script>
+(() => {
+  "use strict";
+
+  const products = {
+    omamori: {
+      name: "おまもり",
+      price: 500,
+      lines: [
+        "海の安全を祈りたいな。<br>「おまもり」をください。",
+        "出港前に心強いものを。<br>「おまもり」ありますか？",
+        "艦隊八幡社のご利益を持って帰りたい。<br>「おまもり」ひとつ！"
+      ]
+    },
+    badge: {
+      name: "缶バッジ",
+      price: 300,
+      lines: [
+        "記念に胸につけたいです。<br>「缶バッジ」をください。",
+        "かわいい丸いおみやげがいいな。<br>「缶バッジ」あります？",
+        "友だちに配れる小物を。<br>「缶バッジ」ひとつ！"
+      ]
+    },
+    towel: {
+      name: "タオル",
+      price: 700,
+      lines: [
+        "甲板そうじにも使えるものを。<br>「タオル」をください。",
+        "汗をふける和柄の品がほしいな。<br>「タオル」ありますか？",
+        "参拝のあとに使いたいです。<br>「タオル」ひとつ！"
+      ]
+    }
+  };
+
+  const visitors = [
+    { face: "水", color: "#4b8f76" },
+    { face: "旅", color: "#8f6ab8" },
+    { face: "母", color: "#d07a57" },
+    { face: "船", color: "#4d7fa8" },
+    { face: "福", color: "#c45d78" }
+  ];
+
+  const duration = 30;
+  const patienceMax = 4.5;
+  let running = false;
+  let timeLeft = duration;
+  let sales = 0;
+  let served = 0;
+  let missed = 0;
+  let combo = 0;
+  let bestCombo = 0;
+  let currentItem = "omamori";
+  let patience = patienceMax;
+  let tickTimer = null;
+
+  const timeEl = document.getElementById("time");
+  const salesEl = document.getElementById("sales");
+  const servedEl = document.getElementById("served");
+  const comboEl = document.getElementById("combo");
+  const bubbleEl = document.getElementById("bubble");
+  const visitorEl = document.getElementById("visitor");
+  const visitorFaceEl = document.getElementById("visitorFace");
+  const visitorBodyEl = document.getElementById("visitorBody");
+  const messageEl = document.getElementById("message");
+  const startOverlay = document.getElementById("startOverlay");
+  const endOverlay = document.getElementById("endOverlay");
+  const resultText = document.getElementById("resultText");
+  const itemButtons = Array.from(document.querySelectorAll(".item-button"));
+
+  function randomFrom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function formatMoney(value) {
+    return value.toLocaleString("ja-JP") + "文";
+  }
+
+  function updateStatus() {
+    timeEl.textContent = Math.max(0, timeLeft).toFixed(1) + "秒";
+    salesEl.textContent = formatMoney(sales);
+    servedEl.textContent = served + "人";
+    comboEl.textContent = combo;
+  }
+
+  function setButtons(enabled) {
+    itemButtons.forEach(button => {
+      button.disabled = !enabled;
+    });
+  }
+
+  function showMessage(text, good) {
+    messageEl.textContent = text;
+    messageEl.style.background = good ? "#4b8f76" : "#a9483b";
+    messageEl.style.borderColor = good ? "#31594b" : "#763025";
+    messageEl.classList.remove("show");
+    void messageEl.offsetWidth;
+    messageEl.classList.add("show");
+  }
+
+  function newCustomer() {
+    const keys = Object.keys(products);
+    currentItem = randomFrom(keys);
+    const product = products[currentItem];
+    const guest = randomFrom(visitors);
+    patience = patienceMax;
+
+    visitorFaceEl.textContent = guest.face;
+    visitorBodyEl.style.background = guest.color;
+    visitorBodyEl.style.borderColor = "#31594b";
+    bubbleEl.innerHTML = randomFrom(product.lines) + '<div class="patience"><span id="patienceBar"></span></div>';
+
+    visitorEl.classList.remove("enter");
+    void visitorEl.offsetWidth;
+    visitorEl.classList.add("enter");
+  }
+
+  function serve(itemKey) {
+    if (!running) return;
+
+    const selected = products[itemKey];
+    const wanted = products[currentItem];
+
+    if (itemKey === currentItem) {
+      const bonus = combo >= 2 ? 100 : 0;
+      sales += selected.price + bonus;
+      served += 1;
+      combo += 1;
+      bestCombo = Math.max(bestCombo, combo);
+      showMessage("正解！ +" + formatMoney(selected.price + bonus), true);
+    } else {
+      missed += 1;
+      combo = 0;
+      showMessage("ちがった！ 注文は「" + wanted.name + "」", false);
+    }
+
+    updateStatus();
+    setButtons(false);
+    window.setTimeout(() => {
+      if (running) {
+        newCustomer();
+        setButtons(true);
+      }
+    }, 520);
+  }
+
+  function startGame() {
+    running = true;
+    timeLeft = duration;
+    sales = 0;
+    served = 0;
+    missed = 0;
+    combo = 0;
+    bestCombo = 0;
+    patience = patienceMax;
+    startOverlay.classList.add("hidden");
+    endOverlay.classList.add("hidden");
+    setButtons(true);
+    updateStatus();
+    newCustomer();
+
+    clearInterval(tickTimer);
+    tickTimer = setInterval(() => {
+      timeLeft -= 0.1;
+      patience -= 0.1;
+
+      const bar = document.getElementById("patienceBar");
+      if (bar) {
+        bar.style.width = Math.max(0, patience / patienceMax * 100) + "%";
+      }
+
+      if (patience <= 0 && running) {
+        missed += 1;
+        combo = 0;
+        showMessage("お客さんが帰っちゃった", false);
+        newCustomer();
+      }
+
+      updateStatus();
+
+      if (timeLeft <= 0) {
+        finishGame();
+      }
+    }, 100);
+  }
+
+  function finishGame() {
+    running = false;
+    clearInterval(tickTimer);
+    setButtons(false);
+    timeLeft = 0;
+    updateStatus();
+
+    const score = sales + served * 120 + bestCombo * 80 - missed * 40;
+    resultText.innerHTML =
+      "今日の売上は <strong>" + formatMoney(sales) + "</strong> でした。<br>" +
+      "販売数 " + served + "人 / 最高れんぞく " + bestCombo + " / スコア " + Math.max(0, score).toLocaleString("ja-JP") + "点";
+    endOverlay.classList.remove("hidden");
+  }
+
+  document.getElementById("startButton").addEventListener("click", startGame);
+  document.getElementById("restartButton").addEventListener("click", startGame);
+  itemButtons.forEach(button => {
+    button.addEventListener("click", () => serve(button.dataset.item));
+  });
+
+  updateStatus();
+})();
+</script>
+</body>
+</html>
