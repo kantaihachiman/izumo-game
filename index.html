@@ -461,11 +461,43 @@
     animation: pop 0.7s ease;
   }
 
+  .combo-banner {
+    position: absolute;
+    left: 50%;
+    top: 128px;
+    z-index: 5;
+    min-width: 210px;
+    padding: 10px 16px;
+    color: #fff8df;
+    background: #bd3a2b;
+    border: 4px solid #7a261b;
+    text-align: center;
+    font-size: clamp(20px, 4vw, 34px);
+    font-weight: 900;
+    text-shadow: 2px 2px 0 #71281d;
+    box-shadow: 5px 5px 0 rgba(74, 44, 26, 0.18);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) scale(0.92);
+  }
+
+  .combo-banner.show {
+    animation: comboPop 0.82s ease;
+  }
+
   @keyframes pop {
     0% { opacity: 0; transform: translateX(-50%) translateY(8px); }
     18% { opacity: 1; transform: translateX(-50%) translateY(0); }
     80% { opacity: 1; transform: translateX(-50%) translateY(0); }
     100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  }
+
+  @keyframes comboPop {
+    0% { opacity: 0; transform: translateX(-50%) translateY(12px) scale(0.86); }
+    18% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.06); }
+    42% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    84% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.96); }
   }
 
   .game.good-sale .stage {
@@ -676,6 +708,77 @@
     margin: 8px 0 14px;
     font-weight: 700;
     line-height: 1.55;
+  }
+
+  .difficulty-select {
+    margin: 12px 0 16px;
+    text-align: left;
+  }
+
+  .difficulty-label {
+    margin-bottom: 7px;
+    text-align: center;
+    font-weight: 900;
+  }
+
+  .difficulty-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .difficulty-option {
+    cursor: pointer;
+  }
+
+  .difficulty-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .difficulty-card {
+    display: block;
+    min-height: 74px;
+    padding: 8px 6px;
+    background: #fff9e8;
+    border: 3px solid #8e552d;
+    text-align: center;
+    font-weight: 900;
+  }
+
+  .difficulty-card small {
+    display: block;
+    margin-top: 4px;
+    color: #765035;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .difficulty-option input:checked + .difficulty-card {
+    color: #fff8df;
+    background: #4b8f76;
+    border-color: #31594b;
+    box-shadow: inset 0 0 0 2px #fff8df;
+  }
+
+  .difficulty-option input:checked + .difficulty-card small {
+    color: #fff8df;
+  }
+
+  .result-title {
+    display: block;
+    margin-bottom: 7px;
+    color: #bd3a2b;
+    font-size: clamp(22px, 4.5vw, 32px);
+    font-weight: 900;
+  }
+
+  .result-note {
+    display: block;
+    margin-bottom: 8px;
+    color: #765035;
+    font-weight: 900;
   }
 
   .start-button {
@@ -909,6 +1012,12 @@
   margin-top: 12px;
 }
 
+    .combo-banner {
+      top: 114px;
+      min-width: 180px;
+      padding: 8px 12px;
+    }
+
     .controls {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 6px;
@@ -944,6 +1053,15 @@
 
     .ranking-list {
       grid-template-columns: 1fr;
+    }
+
+    .difficulty-options {
+      grid-template-columns: 1fr;
+    }
+
+    .difficulty-card {
+      min-height: auto;
+      padding: 8px;
     }
   }
 </style>
@@ -994,11 +1112,29 @@
         <div class="visitor-tag" id="visitorName">水兵さん</div>
       </div>
       <div class="message" id="message">ありがとうございました！</div>
+      <div class="combo-banner" id="comboBanner">2連続！</div>
 
       <div class="overlay" id="startOverlay">
         <div class="panel">
           <h2>はちまん、開店！</h2>
           <p>お客さんの注文を読んで、下の3つから商品を選びます。30秒で売上スコアを伸ばしましょう。</p>
+          <div class="difficulty-select" aria-label="難易度">
+            <div class="difficulty-label">難易度</div>
+            <div class="difficulty-options">
+              <label class="difficulty-option">
+                <input type="radio" name="difficulty" value="easy">
+                <span class="difficulty-card">のんびり<small>35秒 / 待ち長め</small></span>
+              </label>
+              <label class="difficulty-option">
+                <input type="radio" name="difficulty" value="normal" checked>
+                <span class="difficulty-card">ふつう<small>30秒 / 標準</small></span>
+              </label>
+              <label class="difficulty-option">
+                <input type="radio" name="difficulty" value="hard">
+                <span class="difficulty-card">大忙し<small>25秒 / 高得点</small></span>
+              </label>
+            </div>
+          </div>
           <button class="start-button" id="startButton">開店する</button>
         </div>
       </div>
@@ -1038,7 +1174,7 @@
 
     <section class="ranking" aria-label="売上ランキング">
       <div class="ranking-head">
-        <h2>売上ランキング</h2>
+        <h2 id="rankingTitle">売上ランキング</h2>
         <button class="mini-button" id="clearRanking" type="button">リセット</button>
       </div>
       <ol class="ranking-list" id="rankingList"></ol>
@@ -1101,12 +1237,39 @@
     { face: "商", name: "商人さん", color: "#7b8c45", border: "#4f5d2e", greeting: "売れ筋をひとつ見せてください。", patience: 4.2 }
   ];
 
-  const duration = 30;
+  const difficulties = {
+    easy: {
+      name: "のんびり",
+      duration: 35,
+      patienceFactor: 1.25,
+      scoreMultiplier: 0.9,
+      missPenalty: 30,
+      comboBonus: 80
+    },
+    normal: {
+      name: "ふつう",
+      duration: 30,
+      patienceFactor: 1,
+      scoreMultiplier: 1,
+      missPenalty: 40,
+      comboBonus: 100
+    },
+    hard: {
+      name: "大忙し",
+      duration: 25,
+      patienceFactor: 0.78,
+      scoreMultiplier: 1.25,
+      missPenalty: 60,
+      comboBonus: 150
+    }
+  };
+
   const defaultPatience = 4.5;
-  const rankingKey = "hachiman-shop-ranking-v02";
-  let memoryRanking = [];
+  const rankingKey = "hachiman-shop-ranking-v03";
+  let memoryRanking = {};
+  let activeDifficultyKey = "normal";
   let running = false;
-  let timeLeft = duration;
+  let timeLeft = difficulties.normal.duration;
   let sales = 0;
   let served = 0;
   let missed = 0;
@@ -1131,11 +1294,14 @@
   const visitorBodyEl = document.getElementById("visitorBody");
   const visitorNameEl = document.getElementById("visitorName");
   const messageEl = document.getElementById("message");
+  const comboBannerEl = document.getElementById("comboBanner");
   const startOverlay = document.getElementById("startOverlay");
   const endOverlay = document.getElementById("endOverlay");
   const resultText = document.getElementById("resultText");
+  const rankingTitleEl = document.getElementById("rankingTitle");
   const rankingListEl = document.getElementById("rankingList");
   const clearRankingButton = document.getElementById("clearRanking");
+  const difficultyInputs = Array.from(document.querySelectorAll('input[name="difficulty"]'));
   const itemButtons = Array.from(document.querySelectorAll(".item-button"));
 
   function randomFrom(list) {
@@ -1146,8 +1312,23 @@
     return value.toLocaleString("ja-JP") + "文";
   }
 
+  function currentDifficulty() {
+    return difficulties[activeDifficultyKey] || difficulties.normal;
+  }
+
+  function syncDifficultyFromInput() {
+    const checked = difficultyInputs.find(input => input.checked);
+    activeDifficultyKey = checked && difficulties[checked.value] ? checked.value : "normal";
+  }
+
+  function rankingStorageKey() {
+    return rankingKey + "-" + activeDifficultyKey;
+  }
+
   function calculateScore() {
-    return Math.max(0, sales + served * 120 + bestCombo * 80 - missed * 40);
+    const difficulty = currentDifficulty();
+    const baseScore = sales + served * 120 + bestCombo * 80 - missed * difficulty.missPenalty;
+    return Math.max(0, Math.round(baseScore * difficulty.scoreMultiplier));
   }
 
   function updateStatus() {
@@ -1170,19 +1351,19 @@
 
   function readRanking() {
     try {
-      const raw = window.localStorage.getItem(rankingKey);
-      if (!raw) return memoryRanking;
+      const raw = window.localStorage.getItem(rankingStorageKey());
+      if (!raw) return memoryRanking[activeDifficultyKey] || [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-      return memoryRanking;
+      return memoryRanking[activeDifficultyKey] || [];
     }
   }
 
   function writeRanking(entries) {
-    memoryRanking = entries;
+    memoryRanking[activeDifficultyKey] = entries;
     try {
-      window.localStorage.setItem(rankingKey, JSON.stringify(entries));
+      window.localStorage.setItem(rankingStorageKey(), JSON.stringify(entries));
     } catch (error) {
       // ファイルを直接開いた環境で保存できない場合は、この画面中だけ保持します。
     }
@@ -1198,6 +1379,7 @@
   }
 
   function renderRanking() {
+    rankingTitleEl.textContent = "売上ランキング（" + currentDifficulty().name + "）";
     const entries = readRanking();
     if (!entries.length) {
       rankingListEl.innerHTML = '<li class="ranking-empty">まだ記録はありません</li>';
@@ -1210,11 +1392,12 @@
       const entryServed = Number(entry.served) || 0;
       const entryCombo = Number(entry.bestCombo) || 0;
       const entryDate = escapeHtml(entry.date || "");
+      const entryDifficulty = escapeHtml(entry.difficulty || currentDifficulty().name);
 
       return '<li>' +
         '<span class="ranking-rank">' + (index + 1) + '</span>' +
         '<span class="ranking-main">' + formatMoney(entrySales) + '</span>' +
-        '<span class="ranking-sub">' + entryDate + '<br>' +
+        '<span class="ranking-sub">' + entryDifficulty + ' / ' + entryDate + '<br>' +
         entryServed + '人 / ' + entryCombo + '連 / ' + entryScore.toLocaleString("ja-JP") + '点</span>' +
         '</li>';
     }).join("");
@@ -1227,6 +1410,7 @@
       score: Math.max(0, score),
       served,
       bestCombo,
+      difficulty: currentDifficulty().name,
       date: makeDateLabel()
     });
 
@@ -1253,6 +1437,32 @@
     messageEl.classList.remove("show");
     void messageEl.offsetWidth;
     messageEl.classList.add("show");
+  }
+
+  function showComboBanner(nextCombo, bonus) {
+    if (nextCombo < 2) return;
+
+    const label = nextCombo >= 5 ? "大吉" : nextCombo >= 3 ? "商売繁盛" : "連続";
+    comboBannerEl.textContent = label + " " + nextCombo + "連続！" + (bonus ? " +" + formatMoney(bonus) : "");
+    comboBannerEl.classList.remove("show");
+    void comboBannerEl.offsetWidth;
+    comboBannerEl.classList.add("show");
+  }
+
+  function resultTitle(score) {
+    if (score >= 8500 || sales >= 7000) {
+      return { name: "艦隊商売繁盛王", note: "艦隊八幡社に行列ができる名物店員です。" };
+    }
+    if (score >= 6000 || sales >= 5000) {
+      return { name: "八幡社の名物店員", note: "お客さんの注文さばきが見事でした。" };
+    }
+    if (score >= 3600 || sales >= 3000) {
+      return { name: "売店の達人", note: "はちまん売店をしっかり支えました。" };
+    }
+    if (score >= 1800 || sales >= 1500) {
+      return { name: "見習い売り子", note: "落ち着いて続ければ、もっと伸びそうです。" };
+    }
+    return { name: "開店初日", note: "ここから商売繁盛を目指しましょう。" };
   }
 
   function clearCustomerTimer() {
@@ -1301,7 +1511,7 @@
     currentItem = randomFrom(keys);
     const product = products[currentItem];
     const guest = randomFrom(visitors);
-    patienceLimit = guest.patience;
+    patienceLimit = guest.patience * currentDifficulty().patienceFactor;
     patience = patienceLimit;
     transitioning = false;
 
@@ -1326,13 +1536,16 @@
 
     if (itemKey === currentItem) {
       const nextCombo = combo + 1;
-      const bonus = nextCombo >= 3 ? 100 : 0;
+      const bonus = nextCombo >= 3
+        ? currentDifficulty().comboBonus + Math.max(0, nextCombo - 3) * 50
+        : 0;
       const total = selected.price + bonus;
       sales += total;
       served += 1;
       combo = nextCombo;
       bestCombo = Math.max(bestCombo, combo);
       showMessage("正解！ +" + formatMoney(total) + (bonus ? " 連続ボーナス！" : ""), true);
+      showComboBanner(nextCombo, bonus);
       flashResult(true);
     } else {
       missed += 1;
@@ -1346,15 +1559,17 @@
   }
 
   function startGame() {
+    syncDifficultyFromInput();
+    const difficulty = currentDifficulty();
     running = true;
-    timeLeft = duration;
+    timeLeft = difficulty.duration;
     sales = 0;
     served = 0;
     missed = 0;
     combo = 0;
     bestCombo = 0;
-    patienceLimit = defaultPatience;
-    patience = defaultPatience;
+    patienceLimit = defaultPatience * difficulty.patienceFactor;
+    patience = patienceLimit;
     transitioning = false;
     clearCustomerTimer();
     gameEl.classList.remove("good-sale", "miss-sale");
@@ -1400,9 +1615,12 @@
     updateStatus();
 
     const score = calculateScore();
+    const title = resultTitle(score);
     recordRanking(score);
     resultText.innerHTML =
-      "今日の売上は <strong>" + formatMoney(sales) + "</strong> でした。<br>" +
+      '<span class="result-title">' + escapeHtml(title.name) + '</span>' +
+      '<span class="result-note">' + escapeHtml(title.note) + '</span>' +
+      "難易度 " + currentDifficulty().name + " / 売上 <strong>" + formatMoney(sales) + "</strong><br>" +
       "販売数 " + served + "人 / ミス " + missed + "回 / 最高れんぞく " + bestCombo + " / スコア " + score.toLocaleString("ja-JP") + "点";
     endOverlay.classList.remove("hidden");
   }
@@ -1412,6 +1630,18 @@
   clearRankingButton.addEventListener("click", () => {
     writeRanking([]);
     renderRanking();
+  });
+  difficultyInputs.forEach(input => {
+    input.addEventListener("change", () => {
+      syncDifficultyFromInput();
+      if (!running) {
+        timeLeft = currentDifficulty().duration;
+        patienceLimit = defaultPatience * currentDifficulty().patienceFactor;
+        patience = patienceLimit;
+        updateStatus();
+      }
+      renderRanking();
+    });
   });
   itemButtons.forEach(button => {
     button.addEventListener("click", () => serve(button.dataset.item));
@@ -1425,6 +1655,8 @@
     }
   });
 
+  syncDifficultyFromInput();
+  timeLeft = currentDifficulty().duration;
   updateStatus();
   renderRanking();
 })();
