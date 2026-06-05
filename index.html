@@ -600,8 +600,17 @@
 
   .ranking-main {
     display: block;
-    margin-top: 4px;
+    margin-top: 2px;
     font-size: 17px;
+  }
+
+  .ranking-name {
+    display: block;
+    margin-top: 5px;
+    color: #5b3525;
+    font-size: 13px;
+    font-weight: 900;
+    overflow-wrap: anywhere;
   }
 
   .ranking-sub {
@@ -610,6 +619,13 @@
     color: #765035;
     font-size: 12px;
     line-height: 1.35;
+  }
+
+  .ranking-status {
+    margin: -2px 0 8px;
+    color: #765035;
+    font-size: 12px;
+    font-weight: 900;
   }
 
   .ranking-empty {
@@ -710,6 +726,39 @@
     line-height: 1.55;
   }
 
+  .player-name {
+    margin: 12px 0 14px;
+    text-align: left;
+  }
+
+  .player-name label {
+    display: block;
+    margin-bottom: 6px;
+    text-align: center;
+    font-weight: 900;
+  }
+
+  .player-name input {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    border: 3px solid #8e552d;
+    background: #fffef5;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .player-name small {
+    display: block;
+    margin-top: 5px;
+    color: #765035;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
   .difficulty-select {
     margin: 12px 0 16px;
     text-align: left;
@@ -801,6 +850,83 @@
 
   .hidden {
     display: none;
+  }
+
+  @media (max-width: 640px) {
+    .overlay {
+      place-items: start center;
+      padding: 10px 12px;
+      overflow-y: auto;
+    }
+
+    .panel {
+      width: min(440px, 100%);
+      max-height: calc(100% - 20px);
+      padding: 12px;
+      border-width: 3px;
+      overflow-y: auto;
+      box-shadow: 4px 4px 0 rgba(74, 44, 26, 0.18);
+    }
+
+    .panel h2 {
+      margin-bottom: 4px;
+      font-size: 26px;
+    }
+
+    .panel p {
+      margin: 4px 0 8px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .player-name {
+      margin: 8px 0 10px;
+    }
+
+    .player-name label,
+    .difficulty-label {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .player-name input {
+      min-height: 38px;
+      padding: 6px 8px;
+      border-width: 2px;
+    }
+
+    .player-name small {
+      margin-top: 4px;
+      font-size: 11px;
+    }
+
+    .difficulty-select {
+      margin: 8px 0 10px;
+    }
+
+    .difficulty-options {
+      gap: 6px;
+    }
+
+    .difficulty-card {
+      min-height: 56px;
+      padding: 6px 3px;
+      border-width: 2px;
+      font-size: 14px;
+    }
+
+    .difficulty-card small {
+      margin-top: 3px;
+      font-size: 10px;
+      line-height: 1.25;
+    }
+
+    .start-button {
+      min-width: 160px;
+      padding: 9px 14px;
+      font-size: 18px;
+      box-shadow: 0 4px 0 #7a261b;
+    }
   }
 
 @media (max-width:480px) {
@@ -1056,12 +1182,12 @@
     }
 
     .difficulty-options {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .difficulty-card {
-      min-height: auto;
-      padding: 8px;
+      min-height: 56px;
+      padding: 6px 3px;
     }
   }
 </style>
@@ -1118,6 +1244,11 @@
         <div class="panel">
           <h2>はちまん、開店！</h2>
           <p>お客さんの注文を読んで、下の3つから商品を選びます。30秒で売上スコアを伸ばしましょう。</p>
+          <div class="player-name">
+            <label for="playerName">ランキング名（任意）</label>
+            <input id="playerName" type="text" maxlength="12" autocomplete="nickname" placeholder="例：はちまん推し">
+            <small>未入力なら「名無しの参拝者」で記録します</small>
+          </div>
           <div class="difficulty-select" aria-label="難易度">
             <div class="difficulty-label">難易度</div>
             <div class="difficulty-options">
@@ -1177,6 +1308,7 @@
         <h2 id="rankingTitle">売上ランキング</h2>
         <button class="mini-button" id="clearRanking" type="button">リセット</button>
       </div>
+      <p class="ranking-status" id="rankingStatus">オンラインランキング準備中</p>
       <ol class="ranking-list" id="rankingList"></ol>
     </section>
   </div>
@@ -1266,8 +1398,14 @@
 
   const defaultPatience = 4.5;
   const rankingKey = "hachiman-shop-ranking-v03";
+  const playerNameKey = "hachiman-shop-player-name";
+  const onlineRankingUrl = "https://script.google.com/macros/s/AKfycbybwOEImMHuiC_ze7mbzGLkJP3j9nj6HwO8WEzyWWOM_5PhW-ucjFtD8S_p-XblMS_hnw/exec";
   let memoryRanking = {};
+  let onlineRanking = {};
+  let onlineRankingLoaded = {};
+  let onlineRequestId = 0;
   let activeDifficultyKey = "normal";
+  let playerName = "名無しの参拝者";
   let running = false;
   let timeLeft = difficulties.normal.duration;
   let sales = 0;
@@ -1299,8 +1437,10 @@
   const endOverlay = document.getElementById("endOverlay");
   const resultText = document.getElementById("resultText");
   const rankingTitleEl = document.getElementById("rankingTitle");
+  const rankingStatusEl = document.getElementById("rankingStatus");
   const rankingListEl = document.getElementById("rankingList");
   const clearRankingButton = document.getElementById("clearRanking");
+  const playerNameInput = document.getElementById("playerName");
   const difficultyInputs = Array.from(document.querySelectorAll('input[name="difficulty"]'));
   const itemButtons = Array.from(document.querySelectorAll(".item-button"));
 
@@ -1323,6 +1463,36 @@
 
   function rankingStorageKey() {
     return rankingKey + "-" + activeDifficultyKey;
+  }
+
+  function onlineEnabled() {
+    return onlineRankingUrl.indexOf("https://") === 0;
+  }
+
+  function cleanPlayerName(value) {
+    const cleaned = String(value || "").trim().replace(/\s+/g, " ").slice(0, 12);
+    return cleaned || "名無しの参拝者";
+  }
+
+  function loadPlayerName() {
+    try {
+      const savedName = window.localStorage.getItem(playerNameKey) || "";
+      playerNameInput.value = savedName;
+      playerName = cleanPlayerName(savedName);
+    } catch (error) {
+      playerName = cleanPlayerName(playerNameInput.value);
+    }
+  }
+
+  function syncPlayerName() {
+    const rawName = String(playerNameInput.value || "").trim().replace(/\s+/g, " ").slice(0, 12);
+    playerNameInput.value = rawName;
+    playerName = cleanPlayerName(rawName);
+    try {
+      window.localStorage.setItem(playerNameKey, rawName);
+    } catch (error) {
+      // 名前を保存できない環境でも、今回のプレイには使えます。
+    }
   }
 
   function calculateScore() {
@@ -1349,7 +1519,11 @@
     })[char]);
   }
 
-  function readRanking() {
+  function setRankingStatus(text) {
+    rankingStatusEl.textContent = text;
+  }
+
+  function readLocalRanking() {
     try {
       const raw = window.localStorage.getItem(rankingStorageKey());
       if (!raw) return memoryRanking[activeDifficultyKey] || [];
@@ -1360,13 +1534,20 @@
     }
   }
 
-  function writeRanking(entries) {
+  function writeLocalRanking(entries) {
     memoryRanking[activeDifficultyKey] = entries;
     try {
       window.localStorage.setItem(rankingStorageKey(), JSON.stringify(entries));
     } catch (error) {
       // ファイルを直接開いた環境で保存できない場合は、この画面中だけ保持します。
     }
+  }
+
+  function readRanking() {
+    if (onlineRankingLoaded[activeDifficultyKey]) {
+      return onlineRanking[activeDifficultyKey] || [];
+    }
+    return readLocalRanking();
   }
 
   function makeDateLabel() {
@@ -1376,6 +1557,138 @@
     const hour = String(now.getHours()).padStart(2, "0");
     const minute = String(now.getMinutes()).padStart(2, "0");
     return month + "/" + day + " " + hour + ":" + minute;
+  }
+
+  function makeShortDateLabel(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value || "");
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    return month + "/" + day + " " + hour + ":" + minute;
+  }
+
+  function sortRankingEntries(entries) {
+    return entries.slice().sort((a, b) => {
+      const salesDiff = (Number(b.sales) || 0) - (Number(a.sales) || 0);
+      if (salesDiff !== 0) return salesDiff;
+      const scoreDiff = (Number(b.score) || 0) - (Number(a.score) || 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return String(b.createdAt || b.date || "").localeCompare(String(a.createdAt || a.date || ""));
+    });
+  }
+
+  function normalizeRankingEntries(data) {
+    const source = Array.isArray(data) ? data :
+      Array.isArray(data.entries) ? data.entries :
+      Array.isArray(data.ranking) ? data.ranking :
+      Array.isArray(data.scores) ? data.scores : [];
+
+    return sortRankingEntries(source.map(entry => {
+      const difficultyKey = entry.difficultyKey || activeDifficultyKey;
+      const difficulty = entry.difficulty || (difficulties[difficultyKey] ? difficulties[difficultyKey].name : currentDifficulty().name);
+      return {
+        name: entry.name || "名無しの参拝者",
+        sales: Number(entry.sales) || 0,
+        score: Number(entry.score) || 0,
+        served: Number(entry.served) || 0,
+        bestCombo: Number(entry.bestCombo || entry.combo) || 0,
+        difficulty,
+        difficultyKey,
+        date: entry.date || makeShortDateLabel(entry.createdAt)
+      };
+    }).filter(entry => {
+      return entry.difficultyKey === activeDifficultyKey || entry.difficulty === currentDifficulty().name;
+    })).slice(0, 5);
+  }
+
+  function buildOnlineUrl(params) {
+    const query = new URLSearchParams(params);
+    return onlineRankingUrl + "?" + query.toString();
+  }
+
+  function requestRankingJsonp(key, requestId) {
+    return new Promise((resolve, reject) => {
+      const callbackName = "__hachimanRanking" + Date.now() + Math.floor(Math.random() * 10000);
+      const script = document.createElement("script");
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error("JSONP timeout"));
+      }, 8000);
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = data => {
+        cleanup();
+        resolve(data);
+      };
+
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("JSONP failed"));
+      };
+      script.src = buildOnlineUrl({
+        action: "list",
+        difficulty: key,
+        limit: "5",
+        callback: callbackName,
+        t: Date.now()
+      });
+      document.body.appendChild(script);
+    });
+  }
+
+  async function loadOnlineRanking() {
+    if (!onlineEnabled()) {
+      setRankingStatus("ローカルランキング表示中");
+      return;
+    }
+
+    const key = activeDifficultyKey;
+    const requestId = ++onlineRequestId;
+    setRankingStatus("オンラインランキングを確認中...");
+
+    try {
+      let data = null;
+      if (typeof fetch === "function") {
+        const response = await fetch(buildOnlineUrl({
+          action: "list",
+          difficulty: key,
+          limit: "5",
+          t: Date.now()
+        }), { method: "GET", cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        data = await response.json();
+      } else {
+        data = await requestRankingJsonp(key, requestId);
+      }
+
+      if (requestId !== onlineRequestId || key !== activeDifficultyKey) return;
+      onlineRanking[key] = normalizeRankingEntries(data);
+      onlineRankingLoaded[key] = true;
+      renderRanking();
+      setRankingStatus(onlineRanking[key].length ? "オンラインランキング表示中" : "オンラインランキングはまだありません");
+    } catch (error) {
+      try {
+        const data = await requestRankingJsonp(key, requestId);
+        if (requestId !== onlineRequestId || key !== activeDifficultyKey) return;
+        onlineRanking[key] = normalizeRankingEntries(data);
+        onlineRankingLoaded[key] = true;
+        renderRanking();
+        setRankingStatus(onlineRanking[key].length ? "オンラインランキング表示中" : "オンラインランキングはまだありません");
+      } catch (jsonpError) {
+        if (requestId === onlineRequestId && key === activeDifficultyKey) {
+          onlineRankingLoaded[key] = false;
+          renderRanking();
+          setRankingStatus("オンラインにつながらないためローカル表示中");
+        }
+      }
+    }
   }
 
   function renderRanking() {
@@ -1391,11 +1704,13 @@
       const entryScore = Number(entry.score) || 0;
       const entryServed = Number(entry.served) || 0;
       const entryCombo = Number(entry.bestCombo) || 0;
+      const entryName = escapeHtml(entry.name || "名無しの参拝者");
       const entryDate = escapeHtml(entry.date || "");
       const entryDifficulty = escapeHtml(entry.difficulty || currentDifficulty().name);
 
       return '<li>' +
         '<span class="ranking-rank">' + (index + 1) + '</span>' +
+        '<span class="ranking-name">' + entryName + '</span>' +
         '<span class="ranking-main">' + formatMoney(entrySales) + '</span>' +
         '<span class="ranking-sub">' + entryDifficulty + ' / ' + entryDate + '<br>' +
         entryServed + '人 / ' + entryCombo + '連 / ' + entryScore.toLocaleString("ja-JP") + '点</span>' +
@@ -1404,24 +1719,49 @@
   }
 
   function recordRanking(score) {
-    const entries = readRanking();
-    entries.push({
+    const entry = {
+      name: playerName,
       sales,
       score: Math.max(0, score),
       served,
       bestCombo,
+      missed,
+      difficultyKey: activeDifficultyKey,
       difficulty: currentDifficulty().name,
-      date: makeDateLabel()
-    });
+      date: makeDateLabel(),
+      createdAt: new Date().toISOString(),
+      version: "0.3"
+    };
+    const entries = readLocalRanking();
+    entries.push(entry);
 
-    entries.sort((a, b) => {
-      const salesDiff = (Number(b.sales) || 0) - (Number(a.sales) || 0);
-      if (salesDiff !== 0) return salesDiff;
-      return (Number(b.score) || 0) - (Number(a.score) || 0);
-    });
-
-    writeRanking(entries.slice(0, 5));
+    writeLocalRanking(sortRankingEntries(entries).slice(0, 5));
+    onlineRankingLoaded[activeDifficultyKey] = false;
     renderRanking();
+    sendOnlineRanking(entry);
+  }
+
+  async function sendOnlineRanking(entry) {
+    if (!onlineEnabled() || typeof fetch !== "function") return;
+
+    setRankingStatus("オンラインランキングへ送信中...");
+    try {
+      await fetch(onlineRankingUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "add",
+          entry
+        })
+      });
+      setRankingStatus("オンラインへ送信しました。反映を確認中...");
+      setTimeout(loadOnlineRanking, 700);
+    } catch (error) {
+      setRankingStatus("送信できないためローカル記録として保存しました");
+    }
   }
 
   function setButtons(enabled) {
@@ -1450,17 +1790,44 @@
   }
 
   function resultTitle(score) {
-    if (score >= 8500 || sales >= 7000) {
+    if (score >= 16000 || sales >= 13000) {
+      return { name: "神域の売店奉行", note: "艦隊八幡社の売店伝説に名を刻みました。" };
+    }
+    if (score >= 13500 || sales >= 11000) {
+      return { name: "伝説の艦隊売店長", note: "お客さんの波を見事にさばく、別格の売り子です。" };
+    }
+    if (score >= 11000 || sales >= 9000) {
       return { name: "艦隊商売繁盛王", note: "艦隊八幡社に行列ができる名物店員です。" };
     }
-    if (score >= 6000 || sales >= 5000) {
+    if (score >= 9000 || sales >= 7600) {
+      return { name: "八幡社の大番頭", note: "売上も段取りも、社のみんなが頼りにしています。" };
+    }
+    if (bestCombo >= 10 && score >= 7000) {
+      return { name: "大吉連続の達人", note: "れんぞく販売の勢いで、福を呼び込みました。" };
+    }
+    if (score >= 7500 || sales >= 6200) {
+      return { name: "八幡社の看板店員", note: "売店前でうわさになるほどの働きぶりです。" };
+    }
+    if (score >= 6200 || sales >= 5000) {
+      return { name: "海風の販売名人", note: "潮風に乗るような軽やかな注文さばきでした。" };
+    }
+    if (score >= 5000 || sales >= 4200) {
       return { name: "八幡社の名物店員", note: "お客さんの注文さばきが見事でした。" };
     }
-    if (score >= 3600 || sales >= 3000) {
+    if (score >= 4000 || sales >= 3300) {
       return { name: "売店の達人", note: "はちまん売店をしっかり支えました。" };
     }
-    if (score >= 1800 || sales >= 1500) {
+    if (score >= 3000 || sales >= 2500) {
+      return { name: "てきぱき販売係", note: "迷いの少ない接客で、売店にいい流れを作りました。" };
+    }
+    if (score >= 2200 || sales >= 1800) {
+      return { name: "おみやげ案内人", note: "参拝のお客さんに、ぴったりの品を届けました。" };
+    }
+    if (score >= 1400 || sales >= 1200) {
       return { name: "見習い売り子", note: "落ち着いて続ければ、もっと伸びそうです。" };
+    }
+    if (score >= 700 || sales >= 600) {
+      return { name: "駆け出し店番", note: "まずは売店の流れをつかみ始めました。" };
     }
     return { name: "開店初日", note: "ここから商売繁盛を目指しましょう。" };
   }
@@ -1560,6 +1927,7 @@
 
   function startGame() {
     syncDifficultyFromInput();
+    syncPlayerName();
     const difficulty = currentDifficulty();
     running = true;
     timeLeft = difficulty.duration;
@@ -1620,16 +1988,21 @@
     resultText.innerHTML =
       '<span class="result-title">' + escapeHtml(title.name) + '</span>' +
       '<span class="result-note">' + escapeHtml(title.note) + '</span>' +
-      "難易度 " + currentDifficulty().name + " / 売上 <strong>" + formatMoney(sales) + "</strong><br>" +
+      "記録名 " + escapeHtml(playerName) + " / 難易度 " + currentDifficulty().name + " / 売上 <strong>" + formatMoney(sales) + "</strong><br>" +
       "販売数 " + served + "人 / ミス " + missed + "回 / 最高れんぞく " + bestCombo + " / スコア " + score.toLocaleString("ja-JP") + "点";
     endOverlay.classList.remove("hidden");
   }
 
   document.getElementById("startButton").addEventListener("click", startGame);
   document.getElementById("restartButton").addEventListener("click", startGame);
+  playerNameInput.addEventListener("change", syncPlayerName);
+  playerNameInput.addEventListener("blur", syncPlayerName);
   clearRankingButton.addEventListener("click", () => {
-    writeRanking([]);
+    writeLocalRanking([]);
+    onlineRankingLoaded[activeDifficultyKey] = false;
     renderRanking();
+    setRankingStatus("ローカル記録をリセットしました");
+    loadOnlineRanking();
   });
   difficultyInputs.forEach(input => {
     input.addEventListener("change", () => {
@@ -1641,6 +2014,7 @@
         updateStatus();
       }
       renderRanking();
+      loadOnlineRanking();
     });
   });
   itemButtons.forEach(button => {
@@ -1656,9 +2030,11 @@
   });
 
   syncDifficultyFromInput();
+  loadPlayerName();
   timeLeft = currentDifficulty().duration;
   updateStatus();
   renderRanking();
+  loadOnlineRanking();
 })();
 </script>
 </body>
