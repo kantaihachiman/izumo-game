@@ -1294,7 +1294,10 @@
               </label>
             </div>
           </div>
-          <button class="start-button" id="startButton">開店する</button>
+          <div class="end-actions">
+            <button class="start-button" id="startButton">開店する</button>
+            <button class="start-button secondary-button" id="startGameCenterButton">ゲームセンター入口へもどる</button>
+          </div>
         </div>
       </div>
 
@@ -2047,6 +2050,7 @@
 
   document.getElementById("startButton").addEventListener("click", startGame);
   document.getElementById("restartButton").addEventListener("click", startGame);
+  document.getElementById("startGameCenterButton").addEventListener("click", returnToGameCenter);
   document.getElementById("gameCenterButton").addEventListener("click", returnToGameCenter);
   playerNameInput.addEventListener("change", syncPlayerName);
   playerNameInput.addEventListener("blur", syncPlayerName);
