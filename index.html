@@ -102,6 +102,16 @@
     border-bottom: 4px solid var(--brown);
   }
 
+  .game.menu-open .stage {
+    height: 560px;
+  }
+
+  .game.menu-open .overlay,
+  .game.menu-open .panel {
+    max-height: none;
+    overflow: visible;
+  }
+
   .sun {
     position: absolute;
     right: 70px;
@@ -1219,17 +1229,6 @@
     }
   }
 
-  @media (max-width: 640px) {
-    .game.menu-open .stage {
-      height: 520px;
-    }
-
-    .game.menu-open .overlay,
-    .game.menu-open .panel {
-      max-height: none;
-      overflow: visible;
-    }
-  }
 </style>
 </head>
 <body>
