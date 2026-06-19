@@ -1218,10 +1218,22 @@
       padding: 6px 3px;
     }
   }
+
+  @media (max-width: 640px) {
+    .game.menu-open .stage {
+      height: 520px;
+    }
+
+    .game.menu-open .overlay,
+    .game.menu-open .panel {
+      max-height: none;
+      overflow: visible;
+    }
+  }
 </style>
 </head>
 <body>
-  <div class="game">
+  <div class="game menu-open">
     <header>
       <h1>艦隊八幡社 はちまん売店</h1>
       <div class="sub">Ver 0.3 / 30秒で、参拝のお客さんにぴったりの商品を売ろう</div>
@@ -1544,6 +1556,7 @@
 
     endOverlay.classList.add("hidden");
     startOverlay.classList.remove("hidden");
+    gameEl.classList.add("menu-open");
     setButtons(false);
     if (typeof window.scrollTo === "function") {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1995,7 +2008,7 @@
     patience = patienceLimit;
     transitioning = false;
     clearCustomerTimer();
-    gameEl.classList.remove("good-sale", "miss-sale");
+    gameEl.classList.remove("menu-open", "good-sale", "miss-sale");
     startOverlay.classList.add("hidden");
     endOverlay.classList.add("hidden");
     setButtons(true);
@@ -2040,6 +2053,7 @@
     const score = calculateScore();
     const title = resultTitle(score);
     recordRanking(score);
+    gameEl.classList.add("menu-open");
     resultText.innerHTML =
       '<span class="result-title">' + escapeHtml(title.name) + '</span>' +
       '<span class="result-note">' + escapeHtml(title.note) + '</span>' +
