@@ -858,6 +858,16 @@
     box-shadow: 0 1px 0 #7a261b;
   }
 
+  .start-button:disabled {
+    cursor: not-allowed;
+    color: #7d756d;
+    background: #d7d0c4;
+    border-color: #9b9186;
+    box-shadow: 0 4px 0 #9b9186;
+    opacity: 0.78;
+    transform: none;
+  }
+
   .end-actions {
     display: flex;
     flex-wrap: wrap;
@@ -1307,7 +1317,7 @@
           </div>
           <div class="end-actions">
             <button class="start-button" id="startButton">開店する</button>
-            <button class="start-button secondary-button" id="startGameCenterButton">ゲームセンター入口へもどる</button>
+            <button class="start-button secondary-button" id="startGameCenterButton" disabled>ゲームセンター入口へもどる</button>
           </div>
         </div>
       </div>
@@ -1318,7 +1328,7 @@
           <p id="resultText">今日の売上は 0文 でした。</p>
           <div class="end-actions">
             <button class="start-button" id="restartButton">もう一度</button>
-            <button class="start-button secondary-button" id="gameCenterButton">ゲームセンター入口へもどる</button>
+            <button class="start-button secondary-button" id="gameCenterButton" disabled>ゲームセンター入口へもどる</button>
           </div>
         </div>
       </div>
